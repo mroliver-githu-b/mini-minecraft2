@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Minecraft</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      z-index: 10;
+      line-height: 1.4;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    Mini Minecraft<br>
+    Click anywhere to start<br>
+    Move: W A S D
+  </div>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js";
+    import { PointerLockControls } from "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/controls/PointerLockControls.js";
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb);
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    const sunlight = new THREE.DirectionalLight(0xffffff, 1);
+    sunlight.position.set(10, 20, 10);
+    scene.add(sunlight);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const controls = new PointerLockControls(camera, document.body);
+
+    document.body.addEventListener("click", () => {
+      controls.lock();
+    });
+
+    const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const grassMaterial = new THREE.MeshLambertMaterial({ color: 0x55aa55 });
+
+    for (let x = -10; x < 10; x++) {
+      for (let z = -10; z < 10; z++) {
+        const block = new THREE.Mesh(blockGeometry, grassMaterial);
+        block.position.set(x, 0, z);
+        scene.add(block);
+      }
+    }
+
+    camera.position.set(0, 2, 5);
+
+    const keys = {};
+
+    document.addEventListener("keydown", (event) => {
+      keys[event.key.toLowerCase()] = true;
+    });
+
+    document.addEventListener("keyup", (event) => {
+      keys[event.key.toLowerCase()] = false;
+    });
+
+    function movePlayer() {
+      const speed = 0.1;
+
+      if (keys["w"]) controls.moveForward(speed);
+      if (keys["s"]) controls.moveForward(-speed);
+      if (keys["a"]) controls.moveRight(-speed);
+      if (keys["d"]) controls.moveRight(speed);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      movePlayer();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+  </script>
+</body>
+</html>
